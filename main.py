@@ -35,9 +35,9 @@ def main(console):
         with open("test.elow", "wb") as f:
             f.write(table.to_elow())
     else:
-        # with open("test.elow", "rb") as f:
-        #     table = Table.from_elow(f.read())
-        table = generate_coords_table(20, 20)
+        with open("test.elow", "rb") as f:
+            table = Table.from_elow(f.read())
+        # table = generate_coords_table(20, 20)
 
     console.nodelay(True)
 

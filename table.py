@@ -118,7 +118,7 @@ class Table:
         for row in self.rows:
             for cell in row:
                 res = res + cell.serealize_cell_type() + self._cell_serializers[cell.type](cell)
-            res = res + bytes([255])
+            res = res + bytes([0])
         return res
 
     @classmethod
@@ -131,7 +131,7 @@ class Table:
             exit(1) # TODO: Make actually good erros
 
         for cell_type in content:
-            if cell_type == 255:
+            if cell_type == 0: # New line
                 table.cursor = (table.cursor[0], table.cursor[1]+1)
             else:
                 cls._cell_parsers[cell_type](table, content)
