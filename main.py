@@ -49,10 +49,11 @@ def main(console):
         inp = console.getch()
         if inp != curses.ERR:
             if inp in controls:
-                controls[inp]()
+                requests = controls[inp]()
+                if requests:
+                    for req in requests:
+                        req.accept(console)
                 render(console, display.render())
-            else:
-                print(inp)
 
 if __name__ == "__main__":
     curses.wrapper(main)

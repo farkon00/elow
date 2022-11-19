@@ -2,7 +2,8 @@ import curses # Key constants
 
 from typing import List, Tuple
 
-from table import Table, Cell
+from table import Table, Cell, CellType
+from request import TextBoxRequest
 
 class TableDisplay:
     def __init__(self, table: Table):
@@ -48,12 +49,28 @@ class TableDisplay:
         if cursor[1] < 0:
             self.window_pos = (self.window_pos[0], self.table.cursor[1])
 
+    def _update_selected_cell(self, text: str):
+        if not text:
+            self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
+                Cell(CellType.none)
+            return
+        try:
+            self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
+                Cell(CellType.number, float(text))
+        except ValueError:
+            self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
+                Cell(CellType.text, text)
+
+    def _change_selected_content(self):
+        return [TextBoxRequest(self._update_selected_cell)]
+
     def get_controls(self):
         return {
             curses.KEY_UP    : lambda: self.table.move_cursor( 0, -1),
             curses.KEY_DOWN  : lambda: self.table.move_cursor( 0,  1),
             curses.KEY_LEFT  : lambda: self.table.move_cursor(-1,  0),
             curses.KEY_RIGHT : lambda: self.table.move_cursor( 1,  0),
+            ord(" ") : self._change_selected_content,
         }
 
     def render(self) -> str:
