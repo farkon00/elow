@@ -31,7 +31,7 @@ class TextBoxRequest:
             if not isinstance(ret, int) and ret is not None:
                 assert False, "Unreachable, requests can't process a request"
             if ret is None:
-                return 0
+                return 7
             else:
                 return ret
 
@@ -43,5 +43,5 @@ class TextBoxRequest:
         self.on_finish(
             textbox.edit(
                 lambda char: self._controls_validator(char, controls.always_on, console, display, render),
-            ).removesuffix("\n")
+            ).removesuffix(" \n")
         )
