@@ -21,39 +21,27 @@ def generate_coords_table(size_x: int, size_y: int) -> Table:
 
 def main(console):
     if False:
-        table = Table()
-        table.add_cell(Cell(CellType.text, "Hi"))
-        table.add_cell(Cell(CellType.none))
-        table.add_cell(Cell(CellType.text, "Bye"))
-        table.cursor = (0, 1)
-
-        table.add_cell(Cell(CellType.number, 12345.0))
-        table.add_cell(Cell(CellType.number, 1.1))
-        table.add_cell(Cell(CellType.number, 1.0))
-        table.add_cell(Cell(CellType.number, 69.0))
-
-        with open("test.elow", "wb") as f:
-            f.write(table.to_elow())
+        table = generate_coords_table(20, 20)
     else:
-        with open("test.elow", "rb") as f:
+        with open("out.elow", "rb") as f:
             table = Table.from_elow(f.read())
-        # table = generate_coords_table(20, 20)
 
     console.nodelay(True)
+    curses.raw()
 
     display = Display(TableDisplay(table))
     render(console, display.render())
 
     controls = display.get_controls()
+    controls_dict = controls.get_all()
     while True:
         inp = console.getch()
         if inp != curses.ERR:
-            if inp in controls:
-                requests = controls[inp]()
+            if inp in controls_dict:
+                requests = controls_dict[inp]()
                 if requests:
                     for req in requests:
-                        req.accept(console)
+                        req.accept(console, controls, display, render)
                 render(console, display.render())
-
 if __name__ == "__main__":
     curses.wrapper(main)

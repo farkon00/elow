@@ -121,6 +121,10 @@ class Table:
             res = res + bytes([0])
         return res
 
+    def save_to(self, file_name: str):
+        with open(file_name, "wb") as f:
+            f.write(self.to_elow())
+
     @classmethod
     def from_elow(cls, file_content: bytes) -> "Table":
         table = Table()

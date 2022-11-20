@@ -3,7 +3,7 @@ import curses # Key constants
 from typing import List, Tuple
 
 from table import Table, Cell, CellType
-from request import TextBoxRequest
+from request import TextBoxRequest, Controls
 
 class TableDisplay:
     def __init__(self, table: Table):
@@ -64,14 +64,19 @@ class TableDisplay:
     def _change_selected_content(self):
         return [TextBoxRequest(self._update_selected_cell)]
 
-    def get_controls(self):
-        return {
-            curses.KEY_UP    : lambda: self.table.move_cursor( 0, -1),
-            curses.KEY_DOWN  : lambda: self.table.move_cursor( 0,  1),
-            curses.KEY_LEFT  : lambda: self.table.move_cursor(-1,  0),
-            curses.KEY_RIGHT : lambda: self.table.move_cursor( 1,  0),
-            ord(" ") : self._change_selected_content,
-        }
+    def get_controls(self) -> Controls:
+        return Controls(
+            regular={
+                curses.KEY_UP    : lambda: self.table.move_cursor( 0, -1),
+                curses.KEY_DOWN  : lambda: self.table.move_cursor( 0,  1),
+                curses.KEY_LEFT  : lambda: self.table.move_cursor(-1,  0),
+                curses.KEY_RIGHT : lambda: self.table.move_cursor( 1,  0),
+                ord(" ") : self._change_selected_content,
+            },
+            always_on={
+                19 : lambda: self.table.save_to("out.elow") # ctrl + S
+            }
+        )
 
     def render(self) -> str:
         self.update_win_pos_by_cursor()
@@ -95,11 +100,10 @@ class Display:
     def __init__(self, table_display: TableDisplay):
         self.table_display = table_display
 
-    def get_controls(self):
-        return {
+    def get_controls(self) -> Controls:
+        return Controls(always_on={
             27 : exit, # escape
-            **self.table_display.get_controls()
-        }
+        }) + self.table_display.get_controls()
 
     def render(self) -> str:
         return self.table_display.render()
