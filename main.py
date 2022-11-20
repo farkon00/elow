@@ -2,6 +2,8 @@ import curses
 
 from table import *
 from display import *
+from formula.expr import *
+from formula import lexer, parser
 
 def render(console, text: str):
     console.clear()
