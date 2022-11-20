@@ -3,7 +3,7 @@ import curses
 from table import *
 from display import *
 from formula.expr import *
-from formula import lexer, parser
+from formula.lexer import Lexer
 
 def render(console, text: str):
     console.clear()
@@ -21,12 +21,25 @@ def generate_coords_table(size_x: int, size_y: int) -> Table:
 
     return table
 
+def generate_lexer_test_table():
+    lexer = Lexer("sum(:0:1, :0: 2)* 12 +: 69:420")
+    tokens = lexer.lex()
+    table = Table()
+    for row, token in enumerate(tokens):
+        table.cursor = (0, row)
+        table.add_cell(Cell(CellType.text, token.type.name))
+        table.add_cell(Cell(CellType.text, token.value))
+    table.cursor = (0, 0)
+    table.save_to("tokens.elow")
+    return table
+
 def main(console):
     if False:
-        table = generate_coords_table(20, 20)
+        table = generate_lexer_test_table()
     else:
         with open("out.elow", "rb") as f:
             table = Table.from_elow(f.read())
+        pass
 
     console.nodelay(True)
     curses.raw()
