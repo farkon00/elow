@@ -7,26 +7,32 @@ MAGIC = bytes([0xE]) + bytes("LOW", encoding="utf-8")
 
 class Table:
     _cell_parsers: Dict[CellType, "function"] = {
-        CellType.none  .value : Cell.parse_none_cell,
-        CellType.number.value : Cell.parse_number_cell,
-        CellType.text  .value : Cell.parse_text_cell,
+        CellType.none   .value : Cell.parse_none_cell,
+        CellType.number .value : Cell.parse_number_cell,
+        CellType.text   .value : Cell.parse_text_cell,
+        CellType.formula.value : Cell.parse_formula_cell,
     }
 
     _cell_serializers: Dict[CellType, "function"] = {
-        CellType.none   : Cell.serealize_none_cell,
-        CellType.number : Cell.serealize_number_cell,
-        CellType.text   : Cell.serealize_text_cell,
+        CellType.none    : Cell.serealize_none_cell,
+        CellType.number  : Cell.serealize_number_cell,
+        CellType.text    : Cell.serealize_text_cell,
+        CellType.formula : Cell.serealize_formula_cell,
     }
 
     def __init__(self):
+        self.version = -1
         self.rows: List[List[Cell]] = []
         self.cursor: Tuple[int, int] = (0, 0)
 
-    def add_cell(self, cell: Cell):
+    def _add_cell(self, cell: Cell):
         if len(self.rows) <= self.cursor[1]:
             self.rows.extend([[] for _ in range(len(self.rows)-self.cursor[1]+1)]) 
         self.rows[self.cursor[1]].insert(self.cursor[0]+1, cell)  
         self.cursor = (self.cursor[0]+1, self.cursor[1])
+
+    def add_cell(self, cell_type: CellType = CellType.none, value: object = None):
+        return self._add_cell(Cell(self, cell_type, value))
 
     def move_cursor(self, dx: int, dy: int):
         self.cursor = (self.cursor[0]+dx, self.cursor[1]+dy)
@@ -38,12 +44,12 @@ class Table:
         
         if self.cursor[1] >= len(self.rows):
             self.rows.extend(
-                [[Cell() for _ in range(self.cursor[0])]
+                [[Cell(self) for _ in range(self.cursor[0])]
                     for _ in range(self.cursor[1] - len(self.rows) + 1)])
 
         if self.cursor[0] >= len(self.rows[self.cursor[1]]):
             self.rows[self.cursor[1]].extend(
-                [Cell() for _ in 
+                [Cell(self) for _ in 
                     range(self.cursor[0] - len(self.rows[self.cursor[1]]) + 1)]
             )
 

@@ -1,7 +1,6 @@
 from enum import Enum, auto
 from typing import List, Dict, Optional, Union
 
-from cell import CellType 
 
 class ExprType(Enum):
     cell = auto()
@@ -14,28 +13,46 @@ class ExprType(Enum):
     div = auto()
 
 class ExprErrorType(Enum):
-    cell_type_error = auto() 
+    cell_type_error = auto()
+    name_error = auto() 
+    argument_error = auto()
+    position_eror = auto()
+
+expr_error_messages: Dict[ExprErrorType, str] = {
+    ExprErrorType.cell_type_error : "!#TYPE",
+    ExprErrorType.name_error      : "!#NAME",
+    ExprErrorType.argument_error  : "!#ARG",
+    ExprErrorType.position_eror   : "!#POS"
+}
 
 MaybeFloat = Union[float, ExprErrorType]
+MaybeFloatList = Union[List[float], ExprErrorType]
 
 
 class Expr:
-    def __init__(self, type: ExprType, arguments: List["Expr"] = None, value: Optional[object] = None):
+    def __init__(self, text: str, type: ExprType, arguments: List["Expr"] = None, value: Optional[object] = None):
+        self.text = text
         self.type = type
         self.arguments = [] if arguments is None else arguments
         self.value = value
 
     def _execute_cell_expr(self, table: "Table") -> MaybeFloat:
-        cell = table.rows[self.value[1]][self.value[0]]
-        if cell.type != CellType.number:
-            return ExprErrorType.cell_type_error
-        return cell.value
+        try:
+            return table.rows[self.value[1]][self.value[0]].formula_value
+        except IndexError:
+            return ExprErrorType.position_eror
 
     def _execute_constant_expr(self, table: "Table") -> float:
         return self.value
 
     def _execute_func_expr(self, table: "Table") -> MaybeFloat:
-        assert False, "Not implemented"
+        # To avoid circular import import is placed in here  
+        from .functions import elow_functions
+        
+        if self.value not in elow_functions:
+            return ExprErrorType.name_error
+
+        return elow_functions[self.value](table, self.arguments)
 
     def _error_execute(self, a: MaybeFloat, b: MaybeFloat, f: "function") -> MaybeFloat:
         if isinstance(a, ExprErrorType):

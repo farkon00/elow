@@ -6,7 +6,6 @@ from table import *
 from display import *
 from formula.expr import *
 from formula.lexer import Lexer
-from formula.parser import Parser
 
 def render(console, text: str):
     console.clear()
@@ -19,7 +18,7 @@ def generate_coords_table(size_x: int, size_y: int) -> Table:
     for y in range(size_y):
         table.cursor = (0, y)
         for x in range(size_x):
-            table.add_cell(Cell(CellType.text, f":{x}:{y}"))
+            table.add_cell(CellType.text, f":{x}:{y}")
     
     table.cursor = (0, 0)
 
@@ -31,8 +30,8 @@ def generate_lexer_test_table(text: str) -> Table:
     table = Table()
     for row, token in enumerate(tokens):
         table.cursor = (0, row)
-        table.add_cell(Cell(CellType.text, token.type.name))
-        table.add_cell(Cell(CellType.text, token.value))
+        table.add_cell(CellType.text, token.type.name)
+        table.add_cell(CellType.text, token.value)
     table.cursor = (0, 0)
     table.save_to("tokens.elow")
     return table

@@ -47,7 +47,7 @@ class Parser:
                 break
                 
             if token.type == TokenType.number:
-                self.last_expr = Expr(ExprType.constant, value=float(token.value))
+                self.last_expr = Expr(token.value, ExprType.constant, value=float(token.value))
             elif token.type == TokenType.colon:
                 col = self._expect(TokenType.number)
                 self._expect(TokenType.colon)
@@ -57,7 +57,7 @@ class Parser:
                 if not x.is_integer() or not y.is_integer():
                     raise InvalidFormula
                 
-                self.last_expr = Expr(ExprType.cell, value=(int(x), int(y)))
+                self.last_expr = Expr(f":{col.value}:{row.value}", ExprType.cell, value=(int(x), int(y)))
             elif token.type == TokenType.operation:
                 if self.last_expr is None:
                     raise InvalidFormula
@@ -66,7 +66,10 @@ class Parser:
                 self.last_expr = None
                 right = self.parse(end=end)
                 self.last_expr = None
-                self.last_expr = Expr(self.OPERATIONS[token.value], [left, right])
+                self.last_expr = Expr(
+                    left.text + token.value + right.text,
+                    self.OPERATIONS[token.value], [left, right]
+                )
             elif token.type == TokenType.identifier: # function
                 self._expect(TokenType.l_paren)
                 args = []
@@ -82,7 +85,10 @@ class Parser:
                         if next(self.tokens).type == TokenType.r_paren:
                             break
                 self.last_expr = None
-                self.last_expr = Expr(ExprType.func, args, token.value)
+                self.last_expr = Expr(
+                    f"{token.value}({', '.join([arg.text for arg in args])})",
+                    ExprType.func, args, token.value
+                )
             else:
                 raise InvalidFormula
         else:

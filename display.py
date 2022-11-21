@@ -3,6 +3,8 @@ import curses # Key constants
 from typing import List, Tuple
 
 from table import Table, Cell, CellType
+from formula.lexer import Lexer
+from formula.parser import Parser, InvalidFormula
 from request import TextBoxRequest, Controls
 
 class TableDisplay:
@@ -52,14 +54,22 @@ class TableDisplay:
     def _update_selected_cell(self, text: str):
         if not text:
             self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
-                Cell(CellType.none)
+                Cell(self.table)
             return
         try:
             self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
-                Cell(CellType.number, float(text))
+                Cell(self.table, CellType.number, float(text))
         except ValueError:
-            self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
-                Cell(CellType.text, text)
+            if text.startswith("\\f "): 
+                try:
+                    expr = Parser(Lexer(text.removeprefix("\\f ")).lex()).parse()
+                    self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
+                        Cell(self.table, CellType.formula, expr)
+                except InvalidFormula:
+                    pass
+            else:
+                self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
+                    Cell(self.table, CellType.text, text)
 
     def _change_selected_content(self):
         return [TextBoxRequest(self._update_selected_cell)]
@@ -75,6 +85,7 @@ class TableDisplay:
         })
 
     def render(self) -> str:
+        self.table.version += 1
         self.update_win_pos_by_cursor()
         col_sizes = self._get_col_sizes()
         string_table: List[List[str]] = []

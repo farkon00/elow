@@ -11,6 +11,9 @@ def next_int(bytes_iter: Iterator, size: int = 4):
 def next_float(bytes_iter: Iterator):
     return struct.unpack("f", next_bytes(bytes_iter, 4))[0]
 
+def next_length_str(bytes_iter: Iterator):
+    return next_bytes(bytes_iter, size=next_int(bytes_iter)).decode("utf-8")
+
 class QueuedIter:
     def __init__(self, base: list):
         self._queue = base
