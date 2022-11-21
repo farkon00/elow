@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 
 from cell import CellType 
 
@@ -16,7 +16,7 @@ class ExprType(Enum):
 class ExprErrorType(Enum):
     cell_type_error = auto() 
 
-MaybeFloat = float | ExprErrorType
+MaybeFloat = Union[float, ExprErrorType]
 
 
 class Expr:

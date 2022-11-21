@@ -1,15 +1,19 @@
 import curses
 
+from pprint import pformat
+
 from table import *
 from display import *
 from formula.expr import *
 from formula.lexer import Lexer
+from formula.parser import Parser
 
 def render(console, text: str):
     console.clear()
     console.refresh()
     print("".join(["\r\n" if char == "\n" else char for char in text]))
 
+# Debugging tools
 def generate_coords_table(size_x: int, size_y: int) -> Table:
     table = Table()
     for y in range(size_y):
@@ -21,8 +25,8 @@ def generate_coords_table(size_x: int, size_y: int) -> Table:
 
     return table
 
-def generate_lexer_test_table():
-    lexer = Lexer("sum(:0:1, :0: 2)* 12 +: 69:420")
+def generate_lexer_test_table(text: str) -> Table:
+    lexer = Lexer(text)
     tokens = lexer.lex()
     table = Table()
     for row, token in enumerate(tokens):
@@ -33,13 +37,22 @@ def generate_lexer_test_table():
     table.save_to("tokens.elow")
     return table
 
+def expr_to_str(expr):
+    res = ""
+    if isinstance(expr.arguments, list):
+        for arg in expr.arguments:
+            res += expr_to_str(arg) + "\n"
+    return expr.type.name + " " + (str(expr.value) if expr.value is not None else "") +\
+        "\n  " + "\n  ".join(res.split("\n"))
+# END Debugging tools
+
+
 def main(console):
     if False:
         table = generate_lexer_test_table()
     else:
         with open("out.elow", "rb") as f:
             table = Table.from_elow(f.read())
-        pass
 
     console.nodelay(True)
     curses.raw()
