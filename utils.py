@@ -1,6 +1,6 @@
 import struct
 
-from typing import Iterator, Iterable
+from typing import List, Iterator, Generic, TypeVar
 
 def next_bytes(bytes_iter: Iterator, size: int):
     return bytes([next(bytes_iter) for _ in range(size)])
@@ -14,15 +14,23 @@ def next_float(bytes_iter: Iterator):
 def next_length_str(bytes_iter: Iterator):
     return next_bytes(bytes_iter, size=next_int(bytes_iter)).decode("utf-8")
 
-class QueuedIter:
-    def __init__(self, base: list):
+T = TypeVar("T")
+
+class QueuedIter(Generic[T]):
+    def __init__(self, base: List[T]):
         self._queue = base
         self._cursor = 0
 
-    def add(self, obj: object):
+    def add(self, obj: T):
         self._queue.insert(self._cursor, obj)
 
-    def __next__(self):
+    def current(self) -> T:
+        return self._queue[self._cursor-1]
+
+    def prev(self) -> T:
+        return self._queue[self._cursor-2]
+
+    def __next__(self) -> T:
         try:
             self._cursor += 1
             return self._queue[self._cursor-1]

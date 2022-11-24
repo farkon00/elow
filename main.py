@@ -1,7 +1,5 @@
 import curses
 
-from pprint import pformat
-
 from table import *
 from display import *
 from formula.expr import *
@@ -70,5 +68,6 @@ def main(console):
                     for req in requests:
                         req.accept(console, controls, display, render)
                 render(console, display.render())
+
 if __name__ == "__main__":
     curses.wrapper(main)

@@ -93,3 +93,6 @@ class Expr:
 
     def execute(self, table: "Table") -> MaybeFloat:
         return self._expr_type_executors[self.type](self, table)
+
+    def __str__(self) -> str:
+        return self.text

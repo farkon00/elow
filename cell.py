@@ -38,7 +38,7 @@ class Cell:
     @classmethod
     def parse_formula_cell(cls, table: "Table", content: Iterator):
         table.add_cell(CellType.formula, 
-            Parser(Lexer(next_length_str(content)).lex()).parse()
+            Parser(Lexer(next_length_str(content)).lex()).parse(is_main=True)
         )
 
 

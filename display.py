@@ -62,7 +62,7 @@ class TableDisplay:
         except ValueError:
             if text.startswith("\\f "): 
                 try:
-                    expr = Parser(Lexer(text.removeprefix("\\f ")).lex()).parse()
+                    expr = Parser(Lexer(text.removeprefix("\\f ")).lex()).parse(is_main=True)
                     self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
                         Cell(self.table, CellType.formula, expr)
                 except InvalidFormula:
