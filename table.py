@@ -72,7 +72,7 @@ class Table:
 
         if next_bytes(content, len(MAGIC)) != MAGIC:
             print("Invalid file")
-            exit(1) # TODO: Make actually good erros
+            exit(1) # TODO: Make actually good errors
 
         for cell_type in content:
             if cell_type == 0: # New line

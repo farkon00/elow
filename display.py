@@ -6,6 +6,7 @@ from table import Table, Cell, CellType
 from formula.lexer import Lexer
 from formula.parser import Parser, InvalidFormula
 from request import TextBoxRequest, Controls
+from pallet import Pallet
 
 class TableDisplay:
     def __init__(self, table: Table):
@@ -71,6 +72,9 @@ class TableDisplay:
                 self.table.rows[self.table.cursor[1]][self.table.cursor[0]] = \
                     Cell(self.table, CellType.text, text)
 
+    def _open_pallet(self):
+        return [Pallet(self).get_request()]
+
     def _change_selected_content(self):
         return [TextBoxRequest(self._update_selected_cell)]
 
@@ -81,6 +85,7 @@ class TableDisplay:
             curses.KEY_LEFT  : lambda: self.table.move_cursor(-1,  0),
             curses.KEY_RIGHT : lambda: self.table.move_cursor( 1,  0),
             ord(" ") : self._change_selected_content,
+            0 : self._open_pallet,# ctrl + SPACE
             19 : lambda: self.table.save_to("out.elow") # ctrl + S
         })
 
