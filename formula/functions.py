@@ -1,8 +1,10 @@
-from typing import List, Dict
+import math
+
+from typing import List, Dict, Optional
 
 from .expr import MaybeFloat, MaybeFloatList, Expr, ExprErrorType
 
-def execute_args(table: "Table", args: List[Expr], count=None) -> MaybeFloatList:
+def execute_args(table: "Table", args: List[Expr], count: Optional[int] = None) -> MaybeFloatList:
     res = []
     for arg in args:
         res.append(arg.execute(table))
@@ -15,13 +17,30 @@ def execute_args(table: "Table", args: List[Expr], count=None) -> MaybeFloatList
     return res
     
 
-def elow_sum(table: "Table", args_expr: List[Expr]) -> MaybeFloat:
-    args = execute_args(table, args_expr)
-    if isinstance(args, ExprErrorType):
-        return args
-    
+def to_elow_function(f: "function", count: Optional[int] = None) -> MaybeFloat:
+    def temp(table: "Table", args_expr: List[Expr]):
+        args = execute_args(table, args_expr, count=count)
+        if isinstance(args, ExprErrorType):
+            return args
+
+        return f(args)
+
+    return temp    
+
+def elow_sum(args: List[int]) -> float:
     return sum(args)
 
+def elow_pi(args: List[int]) -> float:
+    return math.pi
+
+def elow_abs(args: List[int]) -> float:
+    return abs(args[0])
+
 elow_functions: Dict[str, "function"] = {
-    "sum" : elow_sum
+    k : to_elow_function(v[0], count=v[1]) for k, v in 
+    {
+        "sum" : (elow_sum, None),
+        "pi"  : (elow_pi,  0),
+        "abs" : (elow_abs, 1),
+    }.items()
 }
