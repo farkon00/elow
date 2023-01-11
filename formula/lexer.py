@@ -16,7 +16,7 @@ class Lexer:
         self.tokens = []
         self.current_tok = ""
 
-    def _is_number(self, tok: str) -> Optional[float]:
+    def _is_number(self, tok: str) -> bool:
         try:
             float(tok)
             return True

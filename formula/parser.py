@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List, Union
 
 from .token import *
 from .expr import *
@@ -109,7 +109,10 @@ class Parser:
         {TokenType.operation : _parse_lower_operation},
     ]
 
-    def parse(self, is_main: bool = False, end: List[str] = []) -> Expr:
+    def parse(self, is_main: bool = False, end: List[str] = []) -> Expr | List[Expr]:
+        """
+        Returns Expr if is_main = False, otherwise returns List[Expr]
+        """
         first = self._next_token()
         if first.type in end:
             raise InvalidFormula

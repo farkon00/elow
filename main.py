@@ -37,7 +37,7 @@ def generate_lexer_test_table(text: str) -> Table:
     table.save_to("tokens.elow")
     return table
 
-def expr_to_str(expr):
+def expr_to_str(expr) -> str:
     res = ""
     if isinstance(expr.arguments, list):
         for arg in expr.arguments:
