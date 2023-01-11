@@ -24,7 +24,6 @@ class Parser:
     def _expect(self, token_type: TokenType) -> Token:
         token = self._next_token()
         if token.type != token_type:
-            assert False, (token.type, token_type)
             raise InvalidFormula
         return token
 
@@ -72,14 +71,20 @@ class Parser:
         if has_args:
             while True:
                 [arg, *rest] = Parser(list(self.tokens)).parse(end=[TokenType.comma, TokenType.r_paren])
-                self.tokens = QueuedIter(rest)
+                self.tokens.__init__(rest)
                 args.append(arg)
-                if next(self.tokens).type == TokenType.r_paren:
+                if self._next_token().type == TokenType.r_paren:
                     break
         self.new_tokens.append(Expr(
             f"{token.value}({', '.join([arg.text for arg in args])})",
             ExprType.func, args, token.value
         ))
+
+    def _parse_parens(self, token: Token):
+        [expr, *rest] = Parser(list(self.tokens)).parse(end=[TokenType.r_paren])
+        self.tokens.__init__(rest[1:])
+        expr.text = f"({expr.text})"
+        self.new_tokens.append(expr)
 
     def _parse_higher_operation(self, token: Token):
         if token.value in self.HIGHER_OPERATIONS:
@@ -97,7 +102,8 @@ class Parser:
         {
             TokenType.identifier : _parse_function,
             TokenType.colon : _parse_cell, 
-            TokenType.number : _parse_number
+            TokenType.number : _parse_number,
+            TokenType.l_paren : _parse_parens,
         },
         {TokenType.operation : _parse_higher_operation},
         {TokenType.operation : _parse_lower_operation},
@@ -109,7 +115,7 @@ class Parser:
             raise InvalidFormula
         self.tokens.add(first)
 
-        for iteration in self.ITERATIONS:
+        for it, iteration in enumerate(self.ITERATIONS):
             for token in self.tokens:
                 if isinstance(token, Expr):
                     self.new_tokens.append(token)
