@@ -20,10 +20,11 @@ class Table:
         CellType.formula : Cell.serealize_formula_cell,
     }
 
-    def __init__(self):
+    def __init__(self, path: str = "out.elow"):
         self.version = -1
         self.rows: List[List[Cell]] = []
         self.cursor: Tuple[int, int] = (0, 0)
+        self.path = path
 
     def _add_cell(self, cell: Cell):
         if len(self.rows) <= self.cursor[1]:
@@ -66,8 +67,8 @@ class Table:
             f.write(self.to_elow())
 
     @classmethod
-    def from_elow(cls, file_content: bytes) -> "Table":
-        table = Table()
+    def from_elow(cls, file_content: bytes, path: str) -> "Table":
+        table = Table(path=path)
         content = iter(file_content)
 
         if next_bytes(content, len(MAGIC)) != MAGIC:

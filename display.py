@@ -28,7 +28,8 @@ class TableDisplay:
             self.table.rows[self.window_pos[1]:self.window_pos[1]+self.window_size[1]]]
 
     def _get_col_sizes(self) -> List[int]:
-        col_sizes = [1 for _ in range(self.window_size[1])]
+        col_sizes = [len(str(offset + self.window_pos[0])) 
+            for offset in range(self.window_size[1])]
         for row in self._get_window():
             for col, cell in enumerate(row):
                 col_sizes[col] = max(len(str(cell)), col_sizes[col])
@@ -86,7 +87,7 @@ class TableDisplay:
             curses.KEY_RIGHT : lambda: self.table.move_cursor( 1,  0),
             ord(" ") : self._change_selected_content,
             0 : self._open_pallet,# ctrl + SPACE
-            19 : lambda: self.table.save_to("out.elow") # ctrl + S
+            19 : lambda: self.table.save_to(self.table.path) # ctrl + S
         })
 
     def render(self) -> str:
@@ -95,15 +96,21 @@ class TableDisplay:
         col_sizes = self._get_col_sizes()
         string_table: List[List[str]] = []
         cursor = self.to_win_coords(self.table.cursor)
-        for row in self._get_window():
+        for row in [range(self.window_pos[0], self.window_pos[0]+self.window_size[0])] + self._get_window():
             string_row = []
             for cell, col_size in zip(row, col_sizes):
                 string_cell = str(cell)
                 string_row.append(string_cell + (col_size-len(string_cell)) * " ")
             string_table.append(string_row)
+        size = len(str(self.window_pos[1]+self.window_size[1]-1))
+        for index, row in zip(range(self.window_pos[1], self.window_pos[1]+self.window_size[1]), string_table[1:]):
+            text = str(index)
+            row.insert(0, " " * (size - len(text)) + text)
+        
+        string_table[0].insert(0, " " * size)
 
         # Make selected cell bold
-        string_table[cursor[1]][cursor[0]] = self._apply_selection_styles(string_table[cursor[1]][cursor[0]])
+        string_table[cursor[1]+1][cursor[0]+1] = self._apply_selection_styles(string_table[cursor[1]+1][cursor[0]+1])
 
         return "\n".join([" ".join(row) for row in string_table])
 

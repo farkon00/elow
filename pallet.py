@@ -10,7 +10,7 @@ class Pallet:
         return TextBoxRequest(on_finish = lambda text: self._on_finish(text))
 
     def _save_command(self):
-        self.table_display.table.save_to("out.elow")
+        self.table_display.table.save_to(self.table_display.table.path)
 
     def _exit_command(self):
         exit()

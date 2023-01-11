@@ -1,3 +1,4 @@
+import curses
 from curses import textpad
 from typing import Dict
 
@@ -24,6 +25,7 @@ class TextBoxRequest:
     def _controls_validator(self, char, controls: Dict[int, "function"], console,
                             display: "Display", render: "function") -> int:
         if char == ord("\n"):
+            curses.curs_set(0) # Inivisible
             return 7
         elif char in controls:
             ret = controls[char]()
@@ -39,6 +41,7 @@ class TextBoxRequest:
 
     def accept(self, console, controls: Controls, display: "Display", render: "function"):
         print("\r\n")
+        curses.curs_set(1) # Normal
         textbox = textpad.Textbox(console, insert_mode=True)
         self.on_finish(
             textbox.edit(

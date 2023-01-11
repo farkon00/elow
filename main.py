@@ -1,3 +1,6 @@
+import sys
+import os
+import argparse
 import curses
 
 from table import *
@@ -44,15 +47,27 @@ def expr_to_str(expr):
 # END Debugging tools
 
 
-def main(console):
-    if False:
-        table = generate_lexer_test_table()
-    else:
-        with open("out.elow", "rb") as f:
-            table = Table.from_elow(f.read())
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file", help="*.elow file to open in elow editor")
+    parser.add_argument("-c", "--create", action="store_true", default=False, dest="create")
+    return parser.parse_args(sys.argv[1:])
 
+def load_table() -> Table:
+    args = parse_args()
+    
+    if args.create and not os.path.exists(args.file):
+        temp_table = Table()
+        temp_table.add_cell()
+        temp_table.save_to(args.file)
+
+    with open(args.file, "rb") as f:
+        return Table.from_elow(f.read(), args.file)
+
+def main(console, table):
     console.nodelay(True)
     curses.raw()
+    curses.curs_set(0) # Inivisible
 
     display = Display(TableDisplay(table))
     render(console, display.render())
@@ -70,4 +85,5 @@ def main(console):
                 render(console, display.render())
 
 if __name__ == "__main__":
-    curses.wrapper(main)
+    table = load_table()
+    curses.wrapper(lambda console: main(console, table))
